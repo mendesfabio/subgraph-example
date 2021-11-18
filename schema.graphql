@@ -133,16 +133,16 @@ type AmpUpdate @entity {
 
 type Swap @entity {
   id: ID!
-  caller: Bytes!
-  tokenIn: Bytes!
-  tokenInSym: String!
-  tokenOut: Bytes!
-  tokenOutSym: String!
-  tokenAmountIn: BigDecimal!
-  tokenAmountOut: BigDecimal!
-  poolId: Pool!
-  userAddress: User!
-  timestamp: Int!
+  caller: Bytes
+  tokenIn: Bytes
+  tokenInSym: String
+  tokenOut: Bytes
+  tokenOutSym: String
+  tokenAmountIn: BigDecimal
+  tokenAmountOut: BigDecimal
+  poolId: Pool
+  userAddress: User
+  timestamp: Int
   tx: Bytes!
 }
 

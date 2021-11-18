@@ -268,159 +268,159 @@ export function handleBalanceManage(event: PoolBalanceManaged): void {
  ************** SWAPS ***************
  ************************************/
 export function handleSwapEvent(event: SwapEvent): void {
-  createUserEntity(event.transaction.from);
-  let poolId = event.params.poolId;
+  // createUserEntity(event.transaction.from);
+  // let poolId = event.params.poolId;
 
-  let pool = Pool.load(poolId.toHexString());
-  if (pool == null) {
-    log.warning('Pool not found in handleSwapEvent: {}', [poolId.toHexString()]);
-    return;
-  }
+  // let pool = Pool.load(poolId.toHexString());
+  // if (pool == null) {
+  //   log.warning('Pool not found in handleSwapEvent: {}', [poolId.toHexString()]);
+  //   return;
+  // }
 
-  if (isVariableWeightPool(pool)) {
-    // Some pools' weights update over time so we need to update them after each swap
-    updatePoolWeights(poolId.toHexString());
-  } else if (isStableLikePool(pool)) {
-    // Stablelike pools' amplification factors update over time so we need to update them after each swap
-    updateAmpFactor(pool);
-  }
+  // if (isVariableWeightPool(pool)) {
+  //   // Some pools' weights update over time so we need to update them after each swap
+  //   updatePoolWeights(poolId.toHexString());
+  // } else if (isStableLikePool(pool)) {
+  //   // Stablelike pools' amplification factors update over time so we need to update them after each swap
+  //   updateAmpFactor(pool);
+  // }
 
-  let tokenInAddress: Address = event.params.tokenIn;
-  let tokenOutAddress: Address = event.params.tokenOut;
+  // let tokenInAddress: Address = event.params.tokenIn;
+  // let tokenOutAddress: Address = event.params.tokenOut;
 
   let logIndex = event.logIndex;
   let transactionHash = event.transaction.hash;
-  let blockTimestamp = event.block.timestamp.toI32();
+  // let blockTimestamp = event.block.timestamp.toI32();
 
-  let poolTokenIn = loadPoolToken(poolId.toHexString(), tokenInAddress);
-  let poolTokenOut = loadPoolToken(poolId.toHexString(), tokenOutAddress);
-  if (poolTokenIn == null || poolTokenOut == null) {
-    log.warning('PoolToken not found in handleSwapEvent: (tokenIn: {}), (tokenOut: {})', [
-      tokenInAddress.toHexString(),
-      tokenOutAddress.toHexString(),
-    ]);
-    return;
-  }
+  // let poolTokenIn = loadPoolToken(poolId.toHexString(), tokenInAddress);
+  // let poolTokenOut = loadPoolToken(poolId.toHexString(), tokenOutAddress);
+  // if (poolTokenIn == null || poolTokenOut == null) {
+  //   log.warning('PoolToken not found in handleSwapEvent: (tokenIn: {}), (tokenOut: {})', [
+  //     tokenInAddress.toHexString(),
+  //     tokenOutAddress.toHexString(),
+  //   ]);
+  //   return;
+  // }
 
-  let tokenAmountIn: BigDecimal = scaleDown(event.params.amountIn, poolTokenIn.decimals);
-  let tokenAmountOut: BigDecimal = scaleDown(event.params.amountOut, poolTokenOut.decimals);
+  // let tokenAmountIn: BigDecimal = scaleDown(event.params.amountIn, poolTokenIn.decimals);
+  // let tokenAmountOut: BigDecimal = scaleDown(event.params.amountOut, poolTokenOut.decimals);
 
   let swapId = transactionHash.toHexString().concat(logIndex.toString());
   let swap = new Swap(swapId);
-  swap.tokenIn = tokenInAddress;
-  swap.tokenInSym = poolTokenIn.symbol;
-  swap.tokenAmountIn = tokenAmountIn;
+  // swap.tokenIn = tokenInAddress;
+  // swap.tokenInSym = poolTokenIn.symbol;
+  // swap.tokenAmountIn = tokenAmountIn;
 
-  swap.tokenOut = tokenOutAddress;
-  swap.tokenOutSym = poolTokenOut.symbol;
-  swap.tokenAmountOut = tokenAmountOut;
+  // swap.tokenOut = tokenOutAddress;
+  // swap.tokenOutSym = poolTokenOut.symbol;
+  // swap.tokenAmountOut = tokenAmountOut;
 
-  swap.caller = event.transaction.from;
-  swap.userAddress = event.transaction.from.toHex();
-  swap.poolId = poolId.toHex();
+  // swap.caller = event.transaction.from;
+  // swap.userAddress = event.transaction.from.toHex();
+  // swap.poolId = poolId.toHex();
 
-  swap.timestamp = blockTimestamp;
+  // swap.timestamp = blockTimestamp;
   swap.tx = transactionHash;
   swap.save();
 
-  let swapValueUSD = ZERO_BD;
-  if (isUSDStable(tokenOutAddress)) {
-    swapValueUSD = valueInUSD(tokenAmountOut, tokenOutAddress);
-  } else if (isUSDStable(tokenInAddress)) {
-    swapValueUSD = valueInUSD(tokenAmountIn, tokenInAddress);
-  } else {
-    swapValueUSD = valueInUSD(tokenAmountOut, tokenOutAddress) || valueInUSD(tokenAmountIn, tokenInAddress) || ZERO_BD;
-  }
+  // let swapValueUSD = ZERO_BD;
+  // if (isUSDStable(tokenOutAddress)) {
+  //   swapValueUSD = valueInUSD(tokenAmountOut, tokenOutAddress);
+  // } else if (isUSDStable(tokenInAddress)) {
+  //   swapValueUSD = valueInUSD(tokenAmountIn, tokenInAddress);
+  // } else {
+  //   swapValueUSD = valueInUSD(tokenAmountOut, tokenOutAddress) || valueInUSD(tokenAmountIn, tokenInAddress) || ZERO_BD;
+  // }
 
-  // update pool swapsCount
-  // let pool = Pool.load(poolId.toHex());
-  pool.swapsCount = pool.swapsCount.plus(BigInt.fromI32(1));
-  pool.totalSwapVolume = pool.totalSwapVolume.plus(swapValueUSD);
+  // // update pool swapsCount
+  // // let pool = Pool.load(poolId.toHex());
+  // pool.swapsCount = pool.swapsCount.plus(BigInt.fromI32(1));
+  // pool.totalSwapVolume = pool.totalSwapVolume.plus(swapValueUSD);
 
-  let swapFee = pool.swapFee;
-  let swapFeesUSD = swapValueUSD.times(swapFee);
-  pool.totalSwapFee = pool.totalSwapFee.plus(swapFeesUSD);
+  // let swapFee = pool.swapFee;
+  // let swapFeesUSD = swapValueUSD.times(swapFee);
+  // pool.totalSwapFee = pool.totalSwapFee.plus(swapFeesUSD);
 
-  pool.save();
+  // pool.save();
 
-  // update vault total swap volume
-  let vault = Balancer.load('2') as Balancer;
-  vault.totalSwapVolume = vault.totalSwapVolume.plus(swapValueUSD);
-  vault.totalSwapFee = vault.totalSwapFee.plus(swapFeesUSD);
-  vault.totalSwapCount = vault.totalSwapCount.plus(BigInt.fromI32(1));
-  vault.save();
+  // // update vault total swap volume
+  // let vault = Balancer.load('2') as Balancer;
+  // vault.totalSwapVolume = vault.totalSwapVolume.plus(swapValueUSD);
+  // vault.totalSwapFee = vault.totalSwapFee.plus(swapFeesUSD);
+  // vault.totalSwapCount = vault.totalSwapCount.plus(BigInt.fromI32(1));
+  // vault.save();
 
-  let vaultSnapshot = getBalancerSnapshot(vault.id, blockTimestamp);
-  vaultSnapshot.totalSwapVolume = vault.totalSwapVolume;
-  vaultSnapshot.totalSwapFee = vault.totalSwapFee;
-  vaultSnapshot.totalSwapCount = vault.totalSwapCount;
-  vaultSnapshot.save();
+  // let vaultSnapshot = getBalancerSnapshot(vault.id, blockTimestamp);
+  // vaultSnapshot.totalSwapVolume = vault.totalSwapVolume;
+  // vaultSnapshot.totalSwapFee = vault.totalSwapFee;
+  // vaultSnapshot.totalSwapCount = vault.totalSwapCount;
+  // vaultSnapshot.save();
 
-  let newInAmount = poolTokenIn.balance.plus(tokenAmountIn);
-  poolTokenIn.balance = newInAmount;
-  poolTokenIn.save();
+  // let newInAmount = poolTokenIn.balance.plus(tokenAmountIn);
+  // poolTokenIn.balance = newInAmount;
+  // poolTokenIn.save();
 
-  let newOutAmount = poolTokenOut.balance.minus(tokenAmountOut);
-  poolTokenOut.balance = newOutAmount;
-  poolTokenOut.save();
+  // let newOutAmount = poolTokenOut.balance.minus(tokenAmountOut);
+  // poolTokenOut.balance = newOutAmount;
+  // poolTokenOut.save();
 
-  // update swap counts for token
-  // updates token snapshots as well
-  uptickSwapsForToken(tokenInAddress, event);
-  uptickSwapsForToken(tokenOutAddress, event);
+  // // update swap counts for token
+  // // updates token snapshots as well
+  // uptickSwapsForToken(tokenInAddress, event);
+  // uptickSwapsForToken(tokenOutAddress, event);
 
-  // update volume and balances for the tokens
-  // updates token snapshots as well
-  updateTokenBalances(tokenInAddress, swapValueUSD, tokenAmountIn, SWAP_IN, event);
-  updateTokenBalances(tokenOutAddress, swapValueUSD, tokenAmountOut, SWAP_OUT, event);
+  // // update volume and balances for the tokens
+  // // updates token snapshots as well
+  // updateTokenBalances(tokenInAddress, swapValueUSD, tokenAmountIn, SWAP_IN, event);
+  // updateTokenBalances(tokenOutAddress, swapValueUSD, tokenAmountOut, SWAP_OUT, event);
 
-  let tradePair = getTradePair(tokenInAddress, tokenOutAddress);
-  tradePair.totalSwapVolume = tradePair.totalSwapVolume.plus(swapValueUSD);
-  tradePair.totalSwapFee = tradePair.totalSwapFee.plus(swapFeesUSD);
-  tradePair.save();
+  // let tradePair = getTradePair(tokenInAddress, tokenOutAddress);
+  // tradePair.totalSwapVolume = tradePair.totalSwapVolume.plus(swapValueUSD);
+  // tradePair.totalSwapFee = tradePair.totalSwapFee.plus(swapFeesUSD);
+  // tradePair.save();
 
-  let tradePairSnapshot = getTradePairSnapshot(tradePair.id, blockTimestamp);
-  tradePairSnapshot.totalSwapVolume = tradePair.totalSwapVolume.plus(swapValueUSD);
-  tradePairSnapshot.totalSwapFee = tradePair.totalSwapFee.plus(swapFeesUSD);
-  tradePairSnapshot.save();
+  // let tradePairSnapshot = getTradePairSnapshot(tradePair.id, blockTimestamp);
+  // tradePairSnapshot.totalSwapVolume = tradePair.totalSwapVolume.plus(swapValueUSD);
+  // tradePairSnapshot.totalSwapFee = tradePair.totalSwapFee.plus(swapFeesUSD);
+  // tradePairSnapshot.save();
 
-  if (swap.tokenAmountOut == ZERO_BD || swap.tokenAmountIn == ZERO_BD) {
-    return;
-  }
+  // if (swap.tokenAmountOut == ZERO_BD || swap.tokenAmountIn == ZERO_BD) {
+  //   return;
+  // }
 
-  // Capture price
-  let block = event.block.number;
-  if (isPricingAsset(tokenInAddress)) {
-    let tokenPriceId = getTokenPriceId(poolId.toHex(), tokenOutAddress, tokenInAddress, block);
-    let tokenPrice = new TokenPrice(tokenPriceId);
-    //tokenPrice.poolTokenId = getPoolTokenId(poolId, tokenOutAddress);
-    tokenPrice.poolId = poolId.toHexString();
-    tokenPrice.block = block;
-    tokenPrice.timestamp = blockTimestamp;
-    tokenPrice.asset = tokenOutAddress;
-    tokenPrice.amount = tokenAmountIn;
-    tokenPrice.pricingAsset = tokenInAddress;
+  // // Capture price
+  // let block = event.block.number;
+  // if (isPricingAsset(tokenInAddress)) {
+  //   let tokenPriceId = getTokenPriceId(poolId.toHex(), tokenOutAddress, tokenInAddress, block);
+  //   let tokenPrice = new TokenPrice(tokenPriceId);
+  //   //tokenPrice.poolTokenId = getPoolTokenId(poolId, tokenOutAddress);
+  //   tokenPrice.poolId = poolId.toHexString();
+  //   tokenPrice.block = block;
+  //   tokenPrice.timestamp = blockTimestamp;
+  //   tokenPrice.asset = tokenOutAddress;
+  //   tokenPrice.amount = tokenAmountIn;
+  //   tokenPrice.pricingAsset = tokenInAddress;
 
-    tokenPrice.price = tokenAmountIn.div(tokenAmountOut);
-    tokenPrice.save();
-    updatePoolLiquidity(poolId.toHex(), block, tokenInAddress, blockTimestamp);
-  }
-  if (isPricingAsset(tokenOutAddress)) {
-    let tokenPriceId = getTokenPriceId(poolId.toHex(), tokenInAddress, tokenOutAddress, block);
-    let tokenPrice = new TokenPrice(tokenPriceId);
-    //tokenPrice.poolTokenId = getPoolTokenId(poolId, tokenInAddress);
-    tokenPrice.poolId = poolId.toHexString();
-    tokenPrice.block = block;
-    tokenPrice.timestamp = blockTimestamp;
-    tokenPrice.asset = tokenInAddress;
-    tokenPrice.amount = tokenAmountOut;
-    tokenPrice.pricingAsset = tokenOutAddress;
+  //   tokenPrice.price = tokenAmountIn.div(tokenAmountOut);
+  //   tokenPrice.save();
+  //   updatePoolLiquidity(poolId.toHex(), block, tokenInAddress, blockTimestamp);
+  // }
+  // if (isPricingAsset(tokenOutAddress)) {
+  //   let tokenPriceId = getTokenPriceId(poolId.toHex(), tokenInAddress, tokenOutAddress, block);
+  //   let tokenPrice = new TokenPrice(tokenPriceId);
+  //   //tokenPrice.poolTokenId = getPoolTokenId(poolId, tokenInAddress);
+  //   tokenPrice.poolId = poolId.toHexString();
+  //   tokenPrice.block = block;
+  //   tokenPrice.timestamp = blockTimestamp;
+  //   tokenPrice.asset = tokenInAddress;
+  //   tokenPrice.amount = tokenAmountOut;
+  //   tokenPrice.pricingAsset = tokenOutAddress;
 
-    tokenPrice.price = tokenAmountOut.div(tokenAmountIn);
-    tokenPrice.save();
-    updatePoolLiquidity(poolId.toHex(), block, tokenOutAddress, blockTimestamp);
-  }
+  //   tokenPrice.price = tokenAmountOut.div(tokenAmountIn);
+  //   tokenPrice.save();
+  //   updatePoolLiquidity(poolId.toHex(), block, tokenOutAddress, blockTimestamp);
+  // }
 
-  createPoolSnapshot(poolId.toHexString(), blockTimestamp);
-  saveSwapToSnapshot(poolId.toHexString(), blockTimestamp, swapValueUSD, swapFeesUSD);
+  // createPoolSnapshot(poolId.toHexString(), blockTimestamp);
+  // saveSwapToSnapshot(poolId.toHexString(), blockTimestamp, swapValueUSD, swapFeesUSD);
 }
